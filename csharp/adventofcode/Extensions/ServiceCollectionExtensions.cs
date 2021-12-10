@@ -7,6 +7,7 @@ using adventofcode.Day06;
 using adventofcode.Day07;
 using adventofcode.Day08;
 using adventofcode.Day09;
+using adventofcode.Day10;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace adventofcode.Extensions;
@@ -24,6 +25,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISolver,TreacheryWhales>();
         services.AddScoped<ISolver,SavenSegmentSearch>();
         services.AddScoped<ISolver,SmokeBasin>();
+        services.AddScoped<ISolver,SyntaxScoring>();
 
         return services;
     }
