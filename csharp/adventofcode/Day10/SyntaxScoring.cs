@@ -5,6 +5,7 @@ namespace adventofcode.Day10;
 public sealed class SyntaxScoring : ISolver
 {
     private char[][] NavigationSystem = new char[0][];
+    private IList<char[]> Incomplete = new List<char[]>();
     private readonly IDictionary<char,int> CharackterScore = new Dictionary<char,int>
     {
         {')', 3},
@@ -33,6 +34,7 @@ public sealed class SyntaxScoring : ISolver
         NavigationSystem = (await File.ReadAllLinesAsync(inputFilePath)).Select(s => s.ToCharArray().ToArray()).ToArray();
 
         var syntaxErrorScore = new Dictionary<char,int>();
+        var isCorrupted = false;
         foreach(var line in NavigationSystem)
         {
             var stack = new Stack<char>();
@@ -44,11 +46,13 @@ public sealed class SyntaxScoring : ISolver
                     var prevOpening = stack.Pop();
                     if(ValidPairs.ContainsKey(c) && prevOpening != ValidPairs[c])
                     {
+                        isCorrupted = true;
                         if(!syntaxErrorScore.ContainsKey(c)) syntaxErrorScore.Add(c,1);
                         else syntaxErrorScore[c]++;
                     }
                 }
             }
+            if(!isCorrupted) Incomplete.Add(line);
         }
         var sum = 0;
         foreach(KeyValuePair<char,int> r in syntaxErrorScore)
@@ -60,8 +64,6 @@ public sealed class SyntaxScoring : ISolver
 
     public ValueTask ExecutePart2(string inputFilePath)
     {
-        var incomplete = new List<char[]>();
-        var syntaxErrorScore = new Dictionary<char,int>();
         var scores = new List<long>();
         var stack = new Stack<char>();
         var points = new Dictionary<char, long>
@@ -71,31 +73,8 @@ public sealed class SyntaxScoring : ISolver
             {'}',3},
             {'>',4}
         };
-        foreach(var line in NavigationSystem)
-        {
-            var isCorrupted = false;
-            foreach(var c in line)
-            {
-                if(ValidPairs.Values.ToArray().Contains(c)) stack.Push(c);
-                else
-                {
-                    var prevOpening = stack.Pop();
-                    if(ValidPairs.ContainsKey(c) && prevOpening != ValidPairs[c])
-                    {
-                        isCorrupted = true;
-                    }
-                }
-            }
-            
-            if(!isCorrupted)
-            {
-                incomplete.Add(line);
-            }
-        }
 
-        stack.Clear();
-            
-        foreach(var l in incomplete)
+        foreach(var l in Incomplete)
         {
             var adding = new List<char>();
             foreach(var c in l)
@@ -115,17 +94,12 @@ public sealed class SyntaxScoring : ISolver
                 }
             }
             long score = 0;
-            foreach(var a in adding)
-            {
-                score = score*5 + points[a];
-            }
+            adding.ForEach(c => { score = score*5 + points[c]; });
             scores.Add(score);
         }
         scores = scores.OrderBy(o => o).ToList();
         var middle = Convert.ToInt32(Math.Floor(scores.Count()/2.0));
-
         Console.WriteLine(scores.ElementAt(middle));
-
         return ValueTask.CompletedTask;
     }
 
